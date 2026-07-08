@@ -1,5 +1,8 @@
-from pipeline_runtime_bridge.contract import ArtifactReference, ExecutionRequest
+import json
+from pathlib import Path
+
 from pipeline_runtime_bridge.context import create_runtime_context
+from pipeline_runtime_bridge.contract import ArtifactReference, ExecutionRequest
 from pipeline_runtime_bridge.dispatcher import (
     SUPPORTED_TARGETS,
     dispatch_request,
@@ -84,3 +87,23 @@ def test_execute_route_dispatches_routed_artifact(tmp_path):
     assert result.success is True
     assert result.metadata["target"] == "dashboard"
     assert result.metadata["action"] == "route"
+
+
+def test_mock_execute_writes_physical_output_artifact(tmp_path):
+    context = create_runtime_context(workspace=str(tmp_path / "runtime_demo"))
+    request = ExecutionRequest(target="dashboard", action="generate")
+
+    result = mock_execute(context, request)
+
+    artifact_path = Path(result.artifacts[0].path)
+
+    assert artifact_path.exists()
+
+    data = json.loads(artifact_path.read_text(encoding="utf-8"))
+
+    assert data["status"] == "success"
+    assert data["mock"] is True
+    assert data["target"] == "dashboard"
+    assert data["action"] == "generate"
+    assert data["producer"] == "pipeline_runtime_bridge"
+    assert result.artifacts[0].metadata["physical_file"] is True
