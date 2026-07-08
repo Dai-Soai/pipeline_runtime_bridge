@@ -13,7 +13,11 @@ from pipeline_runtime_bridge.context import (
 from pipeline_runtime_bridge.contract import ArtifactReference, ExecutionRequest
 from pipeline_runtime_bridge.dispatcher import dispatch_request, execute_route
 from pipeline_runtime_bridge.events import emit_runtime_event, read_runtime_events
-from pipeline_runtime_bridge.router import list_artifacts, register_artifact, route_artifact
+from pipeline_runtime_bridge.router import (
+    list_artifacts,
+    register_artifact,
+    route_artifact,
+)
 
 
 def print_json(payload: dict | list) -> None:
@@ -73,6 +77,16 @@ def cmd_register(args: argparse.Namespace) -> int:
     )
 
     registered = register_artifact(context, artifact)
+
+    emit_runtime_event(
+        context,
+        "ArtifactRegistered",
+        {
+            "artifact_id": registered.artifact_id,
+            "artifact_type": registered.artifact_type,
+            "producer": registered.producer,
+        },
+    )
 
     print_json(
         {
@@ -213,7 +227,9 @@ def build_parser() -> argparse.ArgumentParser:
     register_parser.add_argument("--producer", required=True)
     register_parser.set_defaults(func=cmd_register)
 
-    artifacts_parser = subparsers.add_parser("artifacts", help="List registered artifacts")
+    artifacts_parser = subparsers.add_parser(
+        "artifacts", help="List registered artifacts"
+    )
     artifacts_parser.add_argument("--workspace", required=True)
     artifacts_parser.set_defaults(func=cmd_artifacts)
 
@@ -223,7 +239,9 @@ def build_parser() -> argparse.ArgumentParser:
     route_parser.add_argument("--target", required=True)
     route_parser.set_defaults(func=cmd_route)
 
-    dispatch_parser = subparsers.add_parser("dispatch", help="Dispatch a runtime request")
+    dispatch_parser = subparsers.add_parser(
+        "dispatch", help="Dispatch a runtime request"
+    )
     dispatch_parser.add_argument("--workspace", required=True)
     dispatch_parser.add_argument("--target", required=True)
     dispatch_parser.add_argument("--action", default="run")

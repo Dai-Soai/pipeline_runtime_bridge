@@ -6,7 +6,6 @@ from pathlib import Path
 
 from pipeline_runtime_bridge.contract import RuntimeContext, RuntimeEvent
 
-
 EVENT_LOG_FILENAME = "runtime_events.jsonl"
 
 
@@ -17,6 +16,7 @@ EVENT_TYPES = {
     "ExecutionCompleted",
     "RuntimeFinished",
     "RuntimeFailed",
+    "ArtifactRegistered",
 }
 
 

@@ -20,6 +20,7 @@ def test_event_types_contains_expected_events():
     assert "ExecutionCompleted" in EVENT_TYPES
     assert "RuntimeFinished" in EVENT_TYPES
     assert "RuntimeFailed" in EVENT_TYPES
+    assert "ArtifactRegistered" in EVENT_TYPES
 
 
 def test_is_supported_event_type_returns_true_for_known_event():
