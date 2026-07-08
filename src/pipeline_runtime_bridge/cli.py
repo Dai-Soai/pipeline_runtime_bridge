@@ -13,6 +13,7 @@ from pipeline_runtime_bridge.context import (
 from pipeline_runtime_bridge.contract import ArtifactReference, ExecutionRequest
 from pipeline_runtime_bridge.dispatcher import dispatch_request, execute_route
 from pipeline_runtime_bridge.events import emit_runtime_event, read_runtime_events
+from pipeline_runtime_bridge.report import build_runtime_report, write_runtime_report
 from pipeline_runtime_bridge.router import (
     list_artifacts,
     register_artifact,
@@ -260,6 +261,11 @@ def build_parser() -> argparse.ArgumentParser:
     events_parser.add_argument("--workspace", required=True)
     events_parser.set_defaults(func=cmd_events)
 
+    report_parser = subparsers.add_parser("report", help="Build runtime JSON report")
+    report_parser.add_argument("--workspace", required=True)
+    report_parser.add_argument("--write", action="store_true")
+    report_parser.set_defaults(func=cmd_report)
+
     return parser
 
 
@@ -267,6 +273,24 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     return args.func(args)
+
+
+def cmd_report(args: argparse.Namespace) -> int:
+    context = load_runtime_context(args.workspace)
+
+    if args.write:
+        report_path = write_runtime_report(context)
+        print_json(
+            {
+                "status": "written",
+                "report_path": str(report_path),
+                "report": build_runtime_report(context),
+            }
+        )
+        return 0
+
+    print_json(build_runtime_report(context))
+    return 0
 
 
 if __name__ == "__main__":

@@ -253,3 +253,33 @@ def test_cli_register_emits_artifact_registered_event(tmp_path):
     event_types = [event.event_type for event in events]
 
     assert "ArtifactRegistered" in event_types
+
+
+def test_cli_report_outputs_report(tmp_path):
+    workspace = tmp_path / "runtime_demo"
+
+    main(["init", "--workspace", str(workspace)])
+
+    exit_code = main([
+        "report",
+        "--workspace",
+        str(workspace),
+    ])
+
+    assert exit_code == 0
+
+
+def test_cli_report_write_creates_report_file(tmp_path):
+    workspace = tmp_path / "runtime_demo"
+
+    main(["init", "--workspace", str(workspace)])
+
+    exit_code = main([
+        "report",
+        "--workspace",
+        str(workspace),
+        "--write",
+    ])
+
+    assert exit_code == 0
+    assert (workspace / "output" / "runtime_report.json").exists()
